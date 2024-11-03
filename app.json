@@ -3,7 +3,7 @@
     "name": "Air Quality Monitoring App",
     "slug": "air-quality-monitoring-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "defaul",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {

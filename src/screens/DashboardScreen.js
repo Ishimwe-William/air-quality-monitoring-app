@@ -1,40 +1,79 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { MyButton } from "../components/MyButton";
+import { Alert, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
 import { readRTDBData } from "../utils/rtdbUtils";
+import { CircularGraph } from "../components/CircularGraph";
 
 export default function DashboardScreen() {
   const [sensorData, setSensorData] = useState(null);
+  const { width, height } = useWindowDimensions();
 
   const handleReadData = () => {
     readRTDBData()
       .then((data) => {
         setSensorData(data);
-        console.log("Top 10 Data:", data);  // Log data directly here
+        console.log("Top 10 Data:", data);
       })
       .catch((error) => {
         console.error("Error reading data:", error);
       });
   };
 
+  // Check if the screen is in landscape
+  const isLandscape = width > height;
+
   return (
-    <ScrollView contentContainerStyle={[{flexGrow:1 },styles.container]}>
-      <Text>Dashboard Screen</Text>
-      {sensorData ? (
-        <Text>{JSON.stringify(sensorData, null, 2)}</Text>  // Display sensor data
-      ) : (
-        <Text>No data loaded</Text>
-      )}
-      <MyButton HandleOnPress={handleReadData} ButtonText={"Read Data"} />
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
+        <CircularGraph
+          handleOnPress={() => Alert.alert("Temperature", "Temperature Value")}
+          data={29} symbol={"°C"}
+          iconName={"thermometer-outline"}
+          graphTitle={"Temperature Value"}
+        />
+
+        <CircularGraph
+          handleOnPress={() => Alert.alert("Humidity", "Humidity Value")}
+          data={70}
+          symbol={"%"}
+          iconName={"water-outline"}
+          graphTitle={"Humidity Value"}
+          backColor="#ecdde0"
+        />
+
+      </View>
+      <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
+        <CircularGraph
+          handleOnPress={() => Alert.alert("CO2", "CO2 Value")}
+          data={90}
+          symbol={"PPM"}
+          iconName={"car-outline"}
+          graphTitle={"CO2 Gas"}
+          backColor={"#ece6dd"} />
+
+        <CircularGraph
+          handleOnPress={() => Alert.alert("NH3", "NH3 Value")}
+          data={426.5}
+          symbol={"PPM"}
+          iconName={"cloud-outline"}
+          graphTitle={"NH3 Gas"}
+          backColor="#dde1ec" />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
+    flexGrow: 1,
     alignItems: 'center',
+    paddingVertical: 20,
+  },
+  gaugeRow: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  gaugeRowLandscape: {
+    flexDirection: 'row',  // Row layout for landscape
     justifyContent: 'center',
   },
 });
