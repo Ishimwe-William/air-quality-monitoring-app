@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "air-quality-monitoring-app",
+    "name": "Air Quality Monitoring App",
     "slug": "air-quality-monitoring-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,10 +18,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.bunsenplus.airqualitymonitoringapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "283cad5b-a77b-4600-9aba-b62734adafed"
+      }
     }
   }
 }
