@@ -3,7 +3,7 @@ import { Alert, ScrollView, StyleSheet, View, useWindowDimensions } from "react-
 import { readRTDBData } from "../utils/rtdbUtils";
 import { CircularGraph } from "../components/CircularGraph";
 
-export default function DashboardScreen() {
+export const DeviceDetails = () => {
   const [sensorData, setSensorData] = useState(null);
   const { width, height } = useWindowDimensions();
 

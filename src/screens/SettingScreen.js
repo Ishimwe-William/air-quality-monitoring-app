@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Switch, Text, View } from "react-native";
 import { updateSystemStatus, readRTDBData } from "../utils/rtdbUtils"; // Assuming readRTDBData reads the specific state path
 import { MyButton } from "../components/MyButton";
 import { ref, onValue } from 'firebase/database';
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
 
   const handleToggleSystemState = () => {
     const newState = !systemState;
-    setSystemState(newState);  
+    setSystemState(newState);
     updateSystemStatus(newState);
   };
 
@@ -30,6 +30,7 @@ export default function SettingsScreen() {
     <View style={styles.container}>
       <Text>Settings Screen</Text>
       <Text>Current System State: {systemState ? "On" : "Off"}</Text>
+      <Switch onValueChange={handleToggleSystemState} value={systemState} />
       <MyButton HandleOnPress={handleToggleSystemState} ButtonText={"Toggle System State"} />
     </View>
   );
