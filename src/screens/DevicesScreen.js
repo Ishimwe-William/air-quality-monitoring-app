@@ -1,15 +1,33 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { MyButton } from "../components/MyButton";
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { MyMap } from "../components/MyMap";
+import { readLatestCoordinatesForStations } from '../utils/rtdbUtils';
 
 export const DevicesScreen = () => {
-    const navigation = useNavigation();
+    const [latestCoordinates, setLatestCoordinates] = useState(null);
+
+    useEffect(() => {
+        // Fetch the latest coordinates when the component mounts
+        const fetchCoordinates = async () => {
+            try {
+                const coordinates = await readLatestCoordinatesForStations();
+                setLatestCoordinates(coordinates);
+            } catch (error) {
+                console.error("Error fetching coordinates:", error);
+            }
+        };
+
+        fetchCoordinates();
+    }, []);
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <MyMap />
+            {/* Pass latestCoordinates as a prop to MyMap */}
+            {latestCoordinates ? (
+                <MyMap coordinates={latestCoordinates} />
+            ) : (
+                <Text>Loading coordinates...</Text>
+            )}
         </ScrollView>
     );
 };

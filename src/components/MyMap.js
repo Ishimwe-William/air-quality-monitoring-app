@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation } from '@react-navigation/native';
 
-export const MyMap = () => {
-    const navigation = useNavigation(); // Hook to navigate to DeviceDetails screen
+export const MyMap = ({ coordinates }) => {
+    const navigation = useNavigation();
     const [mapType, setMapType] = useState('standard');
     const mapViewRef = useRef(null);
     const [locationData, setLocationData] = useState({
@@ -38,22 +38,8 @@ export const MyMap = () => {
         setMapType((prevType) => (prevType === 'standard' ? 'hybrid' : 'standard'));
     };
 
-    const centerOnLocation = () => {
-        if (mapViewRef.current) {
-            mapViewRef.current.animateToRegion(
-                {
-                    latitude: locationData.latitude,
-                    longitude: locationData.longitude,
-                    latitudeDelta: 0.004,
-                    longitudeDelta: 0.004,
-                },
-                500
-            );
-        }
-    };
-
-    const handleCalloutPress = () => {
-        navigation.navigate('DeviceDetails'); // Navigate to DeviceDetails screen when callout is pressed
+    const handleCalloutPress = (station) => {
+        navigation.navigate('DeviceDetails', { station }); // Navigate to DeviceDetails screen with stationId
     };
 
     if (isLoading) {
@@ -83,18 +69,25 @@ export const MyMap = () => {
                 }}
                 mapType={mapType}
             >
-                <Marker
-                    coordinate={{ latitude: locationData.latitude, longitude: locationData.longitude }}
-                    title="Sensor Location"
-                    description="description"
-                >
-                    <Callout onPress={handleCalloutPress}>
-                        <View style={styles.calloutTextCont}>
-                            <Text style={styles.calloutText}>CMU-Africa Station</Text>
-                            <Text style={styles.calloutTextDesc}>Click to view data</Text>
-                        </View>
-                    </Callout>
-                </Marker>
+                {Object.keys(coordinates).map((stationId) => {
+                    const station = coordinates[stationId];
+                    return (
+                        <Marker
+                            key={stationId}
+                            coordinate={{ latitude: station.latitude, longitude: station.longitude }}
+                            title={`Station ${stationId}`}
+                            description="Click for more details"
+                        >
+                            <Callout onPress={() => handleCalloutPress(station)}>
+                                <View style={styles.calloutTextCont}>
+                                    <Text style={styles.calloutText}>{station.station_name || `Station ${stationId}`}</Text>
+                                    <Text style={styles.calloutTextDesc}>Click to view data</Text>
+                                </View>
+                            </Callout>
+                        </Marker>
+                    );
+                })}
+
             </MapView>
 
             <TouchableOpacity
@@ -106,14 +99,6 @@ export const MyMap = () => {
                 </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-                onPress={centerOnLocation}
-                style={[styles.floatButton, { bottom: 120, right: 20 }]}
-            >
-                <Text style={[styles.floatButtonText, { color: mapType === 'hybrid' ? 'yellow' : 'orange' }]}>
-                    Re-center
-                </Text>
-            </TouchableOpacity>
         </View>
     );
 };

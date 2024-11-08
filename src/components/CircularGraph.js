@@ -13,7 +13,7 @@ export const CircularGraph = ({ data, symbol, iconName, graphTitle, backColor = 
                 width={15}
                 fill={fillData}
                 tintColor="#00e0ff"
-                backgroundWidth={28}
+                backgroundWidth={24}
                 lineCap="round"
                 backgroundColor="#3d5875"
             >
@@ -23,7 +23,7 @@ export const CircularGraph = ({ data, symbol, iconName, graphTitle, backColor = 
                             <TouchableOpacity style={styles.dataText} onPress={handleOnPress}>
                                 <Ionicons name={iconName} size={50} color="green" style={styles.icon} />
                                 <View style={styles.row}>
-                                    <Text style={styles.dataText}>{data} </Text>
+                                    <Text style={styles.dataText}>{`${data.toFixed(2)}`} </Text>
                                     <Text style={styles.symbolText}>{symbol}</Text>
                                 </View>
                             </TouchableOpacity>
@@ -37,7 +37,7 @@ export const CircularGraph = ({ data, symbol, iconName, graphTitle, backColor = 
 
 const styles = StyleSheet.create({
     dataText: {
-        fontSize: 30,
+        fontSize: 28,
         fontWeight: '600',
         color: '#3d5875',
     },
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         color: '#3d5875',
     },
     symbolText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#3d5875',
     },
     row: {

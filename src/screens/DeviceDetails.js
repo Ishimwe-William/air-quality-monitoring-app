@@ -1,69 +1,86 @@
-import { useState } from "react";
-import { Alert, ScrollView, StyleSheet, View, useWindowDimensions } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { readRTDBData } from "../utils/rtdbUtils";
 import { CircularGraph } from "../components/CircularGraph";
-import {MyButton} from "../components/MyButton"
+import { useRoute } from '@react-navigation/native';
+
 export const DeviceDetails = () => {
+  const route = useRoute();
   const [sensorData, setSensorData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { width, height } = useWindowDimensions();
 
-  const handleReadData = () => {
-    readRTDBData()
-      .then((data) => {
-        setSensorData(data);
-        console.log("Top 10 Data:", data);
-      })
-      .catch((error) => {
-        console.error("Error reading data:", error);
-      });
+  const { station } = route.params || {}; // Correct parameter destructuring
+
+  useEffect(() => {
+    if (station) {
+      setSensorData(station);
+    }
+  }, [station]);
+
+  const fetchData = async (data) => {
+    setIsLoading(true);
+    try {
+      setSensorData(data);
+    } catch (error) {
+      console.error("Error reading data:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Check if the screen is in landscape
   const isLandscape = width > height;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <MyButton HandleOnPress={handleReadData} ButtonText={"Console Data"} />
+    <ScrollView contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={fetchData}
+        />
+      }
+    >
+      <Text>{sensorData?.station_name}</Text>
       <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
         <CircularGraph
-          handleOnPress={() => Alert.alert("Temperature", "Temperature Value")}
-          data={29} symbol={"°C"}
+          handleOnPress={() => Alert.alert("Temperature", `Temperature Value: ${sensorData?.temperature}°C`)}
+          data={sensorData?.temperature || 0}
+          symbol={"°C"}
           iconName={"thermometer-outline"}
           graphTitle={"Temperature Value"}
         />
-
         <CircularGraph
-          handleOnPress={() => Alert.alert("Humidity", "Humidity Value")}
-          data={70}
+          handleOnPress={() => Alert.alert("Humidity", `Humidity Value: ${sensorData?.humidity}%`)}
+          data={sensorData?.humidity || 0}
           symbol={"%"}
           iconName={"water-outline"}
           graphTitle={"Humidity Value"}
           backColor="#ecdde0"
         />
-
       </View>
       <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
         <CircularGraph
-          handleOnPress={() => Alert.alert("CO2", "CO2 Value")}
-          data={90}
+          handleOnPress={() => Alert.alert("CO2", `CO2 Value: ${sensorData?.CO2} PPM`)}
+          data={sensorData?.CO2 || 0}
           maxValue={1000}
           symbol={"PPM"}
           iconName={"car-outline"}
           graphTitle={"CO2 Gas"}
-          backColor={"#ece6dd"} />
-
+          backColor={"#ece6dd"}
+        />
         <CircularGraph
-          handleOnPress={() => Alert.alert("NH3", "NH3 Value")}
-          data={426.5}
+          handleOnPress={() => Alert.alert("NH3", `NH3 Value: ${sensorData?.NH4} PPM`)}
+          data={sensorData?.NH4 || 0}
           maxValue={1000}
           symbol={"PPM"}
           iconName={"cloud-outline"}
           graphTitle={"NH4 Gas"}
-          backColor="#dde1ec" />
+          backColor="#dde1ec"
+        />
       </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
