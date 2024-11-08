@@ -2,7 +2,7 @@ import { ref, query, limitToFirst, onValue, set } from 'firebase/database';
 import { rtdb } from "../config/firebaseConfig";
 
 export const readRTDBData = () => {
-    const dataRef = ref(rtdb, "/data");
+    const dataRef = ref(rtdb, "/stations/data/");
     const topTenQuery = query(dataRef, limitToFirst(10));
 
     return new Promise((resolve, reject) => {

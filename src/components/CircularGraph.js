@@ -2,14 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
-export const CircularGraph = ({ data, symbol, iconName, graphTitle, backColor = "#ddecec" , handleOnPress}) => {
+export const CircularGraph = ({ data, symbol, iconName, graphTitle, backColor = "#ddecec", handleOnPress, maxValue = 100 }) => {
+    const fillData = data * 100 / maxValue;
+
     return (
-        <View style={[styles.gaugeContainer, { backgroundColor: backColor}]} >
+        <View style={[styles.gaugeContainer, { backgroundColor: backColor }]} >
             <Text style={styles.title}>{graphTitle}</Text>
             <AnimatedCircularProgress
                 size={200}
                 width={15}
-                fill={data}
+                fill={fillData}
                 tintColor="#00e0ff"
                 backgroundWidth={28}
                 lineCap="round"
