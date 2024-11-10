@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { MyMap } from "../components/MyMap";
 import { readLatestCoordinatesForStations } from '../utils/rtdbUtils';
 
 export const DevicesScreen = () => {
     const [latestCoordinates, setLatestCoordinates] = useState(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         // Fetch the latest coordinates when the component mounts
@@ -14,6 +15,7 @@ export const DevicesScreen = () => {
                 setLatestCoordinates(coordinates);
             } catch (error) {
                 console.error("Error fetching coordinates:", error);
+                setError("Failed to load coordinates.");
             }
         };
 
@@ -22,11 +24,19 @@ export const DevicesScreen = () => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {/* Pass latestCoordinates as a prop to MyMap */}
-            {latestCoordinates ? (
-                <MyMap coordinates={latestCoordinates} />
+            {error ? (
+                <View style={styles.centeredView}>
+                    <Text style={{ color: 'red' }}>{error}</Text>
+                </View>
             ) : (
-                <Text>Loading coordinates...</Text>
+                latestCoordinates ? (
+                    <MyMap coordinates={latestCoordinates} />
+                ) : (
+                    <View style={styles.centeredView}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                        <Text>Loading coordinates...</Text>
+                    </View>
+                )
             )}
         </ScrollView>
     );
@@ -35,5 +45,8 @@ export const DevicesScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
+    },
+    centeredView: {
+        alignItems: 'center',
     },
 });

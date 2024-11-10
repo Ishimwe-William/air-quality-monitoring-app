@@ -8,12 +8,15 @@ export const MyMap = ({ coordinates }) => {
     const navigation = useNavigation();
     const [mapType, setMapType] = useState('standard');
     const mapViewRef = useRef(null);
-    const [locationData, setLocationData] = useState({
-        latitude: -1.698774,
-        longitude: 29.256043,
-    });
+    const [locationData, setLocationData] = useState(null);
     const [hasPermission, setHasPermission] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [initialRegion, setInitialRegion] = useState({
+        latitude: -1.698774,
+        longitude: 29.256043,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+    });
 
     useEffect(() => {
         (async () => {
@@ -26,20 +29,68 @@ export const MyMap = ({ coordinates }) => {
 
             setHasPermission(true);
             const location = await Location.getCurrentPositionAsync({});
-            setLocationData({
+            const userLocation = {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
-            });
+            };
+            setLocationData(userLocation);
+            setInitialRegion(calculateNearestStation(userLocation)); // Update initial region based on nearest station
             setIsLoading(false);
         })();
     }, []);
+
+    // Function to calculate the nearest station
+    const calculateNearestStation = (userLocation) => {
+        if (!coordinates || Object.keys(coordinates).length === 0) return initialRegion;
+
+        let nearestStation = null;
+        let minDistance = Infinity;
+
+        Object.keys(coordinates).forEach((stationId) => {
+            const station = coordinates[stationId];
+            const distance = calculateDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                station.latitude,
+                station.longitude
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestStation = station;
+            }
+        });
+
+        if (nearestStation) {
+            return {
+                latitude: nearestStation.latitude,
+                longitude: nearestStation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+            };
+        }
+        return initialRegion; // Fallback if no nearest station is found
+    };
+
+    // Function to calculate distance between two coordinates (Haversine formula)
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const R = 6371; // Radius of the Earth in km
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in km
+    };
 
     const toggleMapType = () => {
         setMapType((prevType) => (prevType === 'standard' ? 'hybrid' : 'standard'));
     };
 
-    const handleCalloutPress = (station) => {
-        navigation.navigate('DeviceDetails', { station }); // Navigate to DeviceDetails screen with stationId
+    const handleCalloutPress = (stationId) => {
+        navigation.navigate('DeviceDetails', { stationId });
     };
 
     if (isLoading) {
@@ -61,12 +112,7 @@ export const MyMap = ({ coordinates }) => {
                 provider={PROVIDER_GOOGLE}
                 ref={mapViewRef}
                 style={{ flex: 1 }}
-                initialRegion={{
-                    latitude: locationData.latitude,
-                    longitude: locationData.longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                }}
+                initialRegion={initialRegion}
                 mapType={mapType}
             >
                 {Object.keys(coordinates).map((stationId) => {
@@ -78,7 +124,7 @@ export const MyMap = ({ coordinates }) => {
                             title={`Station ${stationId}`}
                             description="Click for more details"
                         >
-                            <Callout onPress={() => handleCalloutPress(station)}>
+                            <Callout onPress={() => handleCalloutPress(stationId)}>
                                 <View style={styles.calloutTextCont}>
                                     <Text style={styles.calloutText}>{station.station_name || `Station ${stationId}`}</Text>
                                     <Text style={styles.calloutTextDesc}>Click to view data</Text>
@@ -87,7 +133,6 @@ export const MyMap = ({ coordinates }) => {
                         </Marker>
                     );
                 })}
-
             </MapView>
 
             <TouchableOpacity
@@ -98,7 +143,6 @@ export const MyMap = ({ coordinates }) => {
                     {mapType === 'standard' ? 'Satellite' : 'Standard'}
                 </Text>
             </TouchableOpacity>
-
         </View>
     );
 };
