@@ -30,7 +30,10 @@ export const DevicesScreen = () => {
                 </View>
             ) : (
                 latestCoordinates ? (
-                    <MyMap coordinates={latestCoordinates} />
+                    <>
+                        <Text style={styles.infoText}>Found nearest AQ station</Text>
+                        <MyMap coordinates={latestCoordinates} />
+                    </>
                 ) : (
                     <View style={styles.centeredView}>
                         <ActivityIndicator size="large" color="#0000ff" />
@@ -48,5 +51,9 @@ const styles = StyleSheet.create({
     },
     centeredView: {
         alignItems: 'center',
+    },
+    infoText: {
+        padding: 2,
+        alignSelf:'center',
     },
 });

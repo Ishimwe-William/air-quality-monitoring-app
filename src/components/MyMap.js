@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -6,9 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 
 export const MyMap = ({ coordinates }) => {
     const navigation = useNavigation();
+    const mapRef = useRef(null);
     const [mapType, setMapType] = useState('standard');
-    const mapViewRef = useRef(null);
-    const [locationData, setLocationData] = useState(null);
     const [hasPermission, setHasPermission] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [initialRegion, setInitialRegion] = useState({
@@ -33,13 +32,11 @@ export const MyMap = ({ coordinates }) => {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
             };
-            setLocationData(userLocation);
-            setInitialRegion(calculateNearestStation(userLocation)); // Update initial region based on nearest station
+            setInitialRegion(calculateNearestStation(userLocation));
             setIsLoading(false);
         })();
     }, []);
 
-    // Function to calculate the nearest station
     const calculateNearestStation = (userLocation) => {
         if (!coordinates || Object.keys(coordinates).length === 0) return initialRegion;
 
@@ -68,13 +65,12 @@ export const MyMap = ({ coordinates }) => {
                 longitudeDelta: 0.01,
             };
         }
-        return initialRegion; // Fallback if no nearest station is found
+        return initialRegion;
     };
 
-    // Function to calculate distance between two coordinates (Haversine formula)
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const toRad = (value) => (value * Math.PI) / 180;
-        const R = 6371; // Radius of the Earth in km
+        const R = 6371;
         const dLat = toRad(lat2 - lat1);
         const dLon = toRad(lon2 - lon1);
         const a =
@@ -82,15 +78,39 @@ export const MyMap = ({ coordinates }) => {
             Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; // Distance in km
+        return R * c;
     };
 
     const toggleMapType = () => {
         setMapType((prevType) => (prevType === 'standard' ? 'hybrid' : 'standard'));
     };
 
-    const handleCalloutPress = (stationId) => {
-        navigation.navigate('DeviceDetails', { stationId });
+    const zoomIn = () => {
+        if (mapRef.current) {
+            const camera = mapRef.current.getCamera();
+            if (camera) {
+                camera.then((cam) => {
+                    mapRef.current.animateCamera({
+                        center: cam.center,
+                        zoom: cam.zoom + 1
+                    }, { duration: 300 });
+                });
+            }
+        }
+    };
+
+    const zoomOut = () => {
+        if (mapRef.current) {
+            const camera = mapRef.current.getCamera();
+            if (camera) {
+                camera.then((cam) => {
+                    mapRef.current.animateCamera({
+                        center: cam.center,
+                        zoom: cam.zoom - 1
+                    }, { duration: 300 });
+                });
+            }
+        }
     };
 
     if (isLoading) {
@@ -109,8 +129,8 @@ export const MyMap = ({ coordinates }) => {
     return (
         <View style={{ flex: 1 }}>
             <MapView
+                ref={mapRef}
                 provider={PROVIDER_GOOGLE}
-                ref={mapViewRef}
                 style={{ flex: 1 }}
                 initialRegion={initialRegion}
                 mapType={mapType}
@@ -124,9 +144,11 @@ export const MyMap = ({ coordinates }) => {
                             title={`Station ${stationId}`}
                             description="Click for more details"
                         >
-                            <Callout onPress={() => handleCalloutPress(stationId)}>
+                            <Callout onPress={() => navigation.navigate('DeviceDetails', { stationId })}>
                                 <View style={styles.calloutTextCont}>
-                                    <Text style={styles.calloutText}>{station.station_name || `Station ${stationId}`}</Text>
+                                    <Text style={styles.calloutText}>
+                                        {station.station_name || `Station ${stationId}`}
+                                    </Text>
                                     <Text style={styles.calloutTextDesc}>Click to view data</Text>
                                 </View>
                             </Callout>
@@ -135,9 +157,19 @@ export const MyMap = ({ coordinates }) => {
                 })}
             </MapView>
 
+            {/* Map Controls */}
+            <View style={styles.mapControls}>
+                <TouchableOpacity onPress={zoomIn} style={styles.controlButton}>
+                    <Text style={styles.controlButtonText}>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={zoomOut} style={styles.controlButton}>
+                    <Text style={styles.controlButtonText}>−</Text>
+                </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
                 onPress={toggleMapType}
-                style={[styles.floatButton, { bottom: 60, right: 20 }]}
+                style={[styles.floatButton, { bottom: 20, left: 10 }]}
             >
                 <Text style={[styles.floatButtonText, { color: mapType === 'hybrid' ? 'yellow' : 'orange' }]}>
                     {mapType === 'standard' ? 'Satellite' : 'Standard'}
@@ -183,5 +215,25 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         textAlign: 'center',
         color: 'blue',
+    },
+    mapControls: {
+        position: 'absolute',
+        right: 20,
+        top: 20,
+        backgroundColor: 'transparent',
+    },
+    controlButton: {
+        width: 35,
+        height: 35,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 20,
+        alignItems: 'center',
+        alignSelf: 'center',
+        marginBottom: 10,
+    },
+    controlButtonText: {
+        color: 'white',
+        fontSize: 24,
+        fontWeight: 'bold',
     },
 });

@@ -70,7 +70,8 @@ export const DeviceDetails = () => {
         />
       }
     >
-      <Text>{sensorData?.station_name || "No data available"}</Text>
+      <Text style={styles.title}>{sensorData?.station_name || "No data available"}</Text>
+      <Text style={styles.date}>{sensorData?.last_updated || "Last updated data not available"}</Text>
       <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
         <CircularGraph
           handleOnPress={() => Alert.alert("Temperature", `Temperature Value: ${sensorData?.temperature || "N/A"}°C`)}
@@ -88,6 +89,7 @@ export const DeviceDetails = () => {
           backColor="#ecdde0"
         />
       </View>
+
       <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
         <CircularGraph
           handleOnPress={() => Alert.alert("CO2", `CO2 Value: ${sensorData?.CO2 || "N/A"} PPM`)}
@@ -96,7 +98,28 @@ export const DeviceDetails = () => {
           symbol={"PPM"}
           iconName={"car-outline"}
           graphTitle={"CO2 Gas"}
+          backColor={"#e2ddec"}
+        />
+        <CircularGraph
+          handleOnPress={() => Alert.alert("CO", `CO Value: ${sensorData?.CO || "N/A"} PPM`)}
+          data={sensorData?.CO || 0}
+          maxValue={1000}
+          symbol={"PPM"}
+          iconName={"car-outline"}
+          graphTitle={"CO Gas"}
           backColor={"#ece6dd"}
+        />
+      </View>
+
+      <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
+        <CircularGraph
+          handleOnPress={() => Alert.alert("Alcohol", `Alcohol Value: ${sensorData?.Alcohol || "N/A"} PPM`)}
+          data={sensorData?.Alcohol || 0}
+          maxValue={1000}
+          symbol={"PPM"}
+          iconName={"car-outline"}
+          graphTitle={"Alcohol Gas"}
+          backColor={"#ddece2"}
         />
         <CircularGraph
           handleOnPress={() => Alert.alert("NH3", `NH3 Value: ${sensorData?.NH4 || "N/A"} PPM`)}
@@ -104,8 +127,29 @@ export const DeviceDetails = () => {
           maxValue={1000}
           symbol={"PPM"}
           iconName={"cloud-outline"}
-          graphTitle={"NH4 Gas"}
-          backColor="#dde1ec"
+          graphTitle={"NH3 Gas"}
+          backColor="#ebecdd"
+        />
+      </View>
+
+      <View style={[styles.gaugeRow, isLandscape && styles.gaugeRowLandscape]}>
+        <CircularGraph
+          handleOnPress={() => Alert.alert("Toluen", `Toluen Value: ${sensorData?.Toluen || "N/A"} PPM`)}
+          data={sensorData?.Toluen || 0}
+          maxValue={1000}
+          symbol={"PPM"}
+          iconName={"cloud-outline"}
+          graphTitle={"Toluen Gas"}
+          backColor="#ece3dd"
+        />
+        <CircularGraph
+          handleOnPress={() => Alert.alert("Aceton", `Aceton Value: ${sensorData?.Aceton || "N/A"} PPM`)}
+          data={sensorData?.Aceton || 0}
+          maxValue={1000}
+          symbol={"PPM"}
+          iconName={"cloud-outline"}
+          graphTitle={"Aceton Gas"}
+          backColor="#eaddec"
         />
       </View>
     </ScrollView>
@@ -125,5 +169,12 @@ const styles = StyleSheet.create({
   gaugeRowLandscape: {
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  title:{
+    fontSize:24,
+  },
+  date:{
+    fontSize:12,
+    fontWeight:'300',
   },
 });
